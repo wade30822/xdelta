@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 
 project(xdelta3 VERSION 3.0.11)
 
@@ -16,6 +16,22 @@ add_compile_definitions(XD3_USE_LARGESIZET=1)
 add_compile_definitions(XD3_ENCODER=1)
 
 add_library(${PROJECT_NAME} ${XD3_SOURCES})
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
-install(FILES xdelta3/xdelta3.h DESTINATION ${PROJECT_NAME}/include)
-install(FILES cmake/xdelta3Config.cmake DESTINATION lib/cmake/xdelta3)
+
+target_include_directories(
+  ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/xdelta3>
+                         $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+
+file(GLOB PUBLIC_HEADERS "xdelta3/*.h")
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER
+                                                 "${PUBLIC_HEADERS}")
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}-targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  PUBLIC_HEADER DESTINATION include/${PROJECT_NAME})
+
+install(
+  EXPORT ${PROJECT_NAME}-targets
+  FILE ${PROJECT_NAME}-config.cmake
+  DESTINATION lib/cmake/${PROJECT_NAME})
